@@ -22,6 +22,7 @@ type RelayRequest struct {
 	StorageDepositLimit  *string `json:"storageDepositLimit"`
 	DataHex              string  `json:"dataHex"`
 	Signer               string  `json:"signer"`
+	CodeHash             string  `json:"codeHash"`
 }
 
 type RelayResponse struct {
@@ -48,6 +49,33 @@ func (l *Limiter) get(ip string) *rate.Limiter {
 	lim := rate.NewLimiter(rate.Every(2*time.Second), 3)
 	l.visitors[ip] = lim
 	return lim
+}
+
+func lockCode(ctx context.Context, rdb *redis.Client, hash string) (string, error) {
+	if hash == "" {
+		return "", fmt.Errorf("empty code hash")
+	}
+	key := "code:" + hash
+	val, err := rdb.Get(ctx, key).Result()
+	if err == nil {
+		if val == "PENDING" {
+			return "PENDING", nil
+		}
+		if val == "SUCCESS" {
+			return "SUCCESS", nil
+		}
+	}
+	if err != nil && err != redis.Nil {
+		return "", err
+	}
+	ok, err := rdb.SetNX(ctx, key, "PENDING", time.Minute*10).Result()
+	if err != nil {
+		return "", err
+	}
+	if !ok {
+		return "PENDING", nil
+	}
+	return "OK", nil
 }
 
 func main() {
@@ -98,6 +126,28 @@ func main() {
 			return
 		}
 
+		if req.CodeHash == "" {
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(RelayResponse{Status: "error", Error: "missing code hash"})
+			return
+		}
+		st, err := lockCode(ctx, rdb, req.CodeHash)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			json.NewEncoder(w).Encode(RelayResponse{Status: "error", Error: "lock error"})
+			return
+		}
+		if st == "PENDING" {
+			w.WriteHeader(http.StatusTooManyRequests)
+			json.NewEncoder(w).Encode(RelayResponse{Status: "error", Error: "正在铸造中"})
+			return
+		}
+		if st == "SUCCESS" {
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(RelayResponse{Status: "error", Error: "此书已经生成过 NFT 了"})
+			return
+		}
+
 		txHash := fmt.Sprintf("0x%x", time.Now().UnixNano())
 		rdb.Del(ctx, "fail:"+ip)
 		logEntry := map[string]any{
@@ -109,6 +159,7 @@ func main() {
 		rdb.LPush(ctx, "mint:logs", b)
 		rdb.LTrim(ctx, "mint:logs", 0, 999)
 
+		rdb.Set(ctx, "code:"+req.CodeHash, "SUCCESS", time.Hour*24)
 		json.NewEncoder(w).Encode(RelayResponse{Status: "submitted", TxHash: txHash})
 	}).Methods("POST")
 
