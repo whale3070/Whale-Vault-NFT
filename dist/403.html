@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<!-- saved from url=(0085)http://198.55.109.102/valut_mint_nft/14fyA7FqikrkSZXzeryLWaPQnjtXoKQjV5oujuyYEZMCpCW2 -->
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TERMINAL - ACCESS DENIED</title>
+    <style>
+        body {
+            background-color: #000;
+            color: #ff3333; /* 警示红 */
+            font-family: 'Courier New', Courier, monospace;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        .container {
+            border: 2px solid #ff3333;
+            padding: 40px;
+            max-width: 600px;
+            background: rgba(20, 0, 0, 0.9);
+            box-shadow: 0 0 20px rgba(255, 51, 51, 0.5);
+            position: relative;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-top: 0;
+            border-bottom: 2px solid #ff3333;
+            padding-bottom: 10px;
+            letter-spacing: 5px;
+        }
+
+        p {
+            font-size: 1.2rem;
+            line-height: 1.6;
+            color: #ff8888;
+        }
+
+        .system-log {
+            font-size: 0.9rem;
+            color: #550000;
+            margin-top: 20px;
+            border-top: 1px solid #330000;
+            padding-top: 10px;
+        }
+
+        .cursor {
+            display: inline-block;
+            width: 10px;
+            height: 20px;
+            background: #ff3333;
+            animation: blink 1s infinite;
+            vertical-align: middle;
+        }
+
+        @keyframes blink {
+            50% { opacity: 0; }
+        }
+
+        /* 增加一种扫描线的物理感 */
+        .scanline {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 2px;
+            background: rgba(255, 51, 51, 0.1);
+            animation: scan 4s linear infinite;
+        }
+
+        @keyframes scan {
+            0% { top: 0; }
+            100% { top: 100%; }
+        }
+    </style>
+</head>
+<body>
+    <div class="scanline"></div>
+    <div class="container">
+        <h1>403 ACCESS DENIED</h1>
+        <p>&gt; 探测到未授权的物理访问...</p>
+        <p>&gt; 错误代码：ERR_HASH_NOT_IN_WHITELIST</p>
+        <p>&gt; 您输入的哈希序列不在白名单中，访问已被拦截。</p>
+        <p>&gt; 物理位置已记录，正在清除临时会话...<span class="cursor"></span></p>
+        
+        <div class="system-log">
+            [SYS_LOG]: Unauthorized sequence detected at 198.55.109.102<br>
+            [SYS_LOG]: Protocol Whale-Vault-Relay terminated.
+        </div>
+    </div>
+
+
+</body></html>
